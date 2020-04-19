@@ -114,6 +114,7 @@ class Game():
         self.numcol2 = 0
         self.match = False
         self.end = False
+        self.memoryList = []
 
     def startScreen(self):
         print("Welcome to Concentration!")
@@ -126,13 +127,17 @@ class Game():
                 else:
                     self.end = False
 
-    def makeSelection(self, deck_of_cards):
+    def makeSelection(self, deck_of_cards, board):
         a = list(string.ascii_lowercase)
-        coordinate1 = input("Please enter a coordinate:") #of the form a1, b1 etc
+        coordinate1 = input("Please enter a coordinate (a1,c4 etc):\n>>>") #of the form a1, b1 etc
         self.coordinate1 = coordinate1
         selection1 = list(coordinate1)
         row1 = int(selection1[1])  
         row1 -= 1
+        if row1 >= board.rows:
+            print("Invalid input, please ensure your row number is between 1 and {}".format(board.rows))
+            return self.makeSelection(deck_of_cards, board)
+
         col1 = int(a.index(selection1[0]))
         #selection1[1] = row1
         self.selection1 = deck_of_cards.deckGrid()[row1, col1]
@@ -140,11 +145,15 @@ class Game():
         self.numrow1 = row1
         print("You have selected the > {} <".format(self.selection1))
 
-        coordinate2 = input("Please enter a coordinate:") #of the form a1, b1 etc
+        coordinate2 = input("Please enter a coordinate (a1,c4 etc):\n>>>") #of the form a1, b1 etc
         self.coordinate2 = coordinate2
         selection2 = list(coordinate2)
         row2 = int(selection2[1])
         row2 -= 1
+        if row2 >= board.rows:
+            print("Invalid input, please ensure your row number is between 1 and {}".format(board.rows))
+            return self.makeSelection(deck_of_cards, board)
+
         col2 = int(a.index(selection2[0]))
         #selection2[1] = row2
         self.selection2 = deck_of_cards.deckGrid()[row2, col2]
@@ -158,16 +167,23 @@ class Game():
         self.selection1.split(" of ")
         self.selection2.split(" of ")
         if self.selection1[0] == self.selection2[0]:
-            print("Congrats! {} and {} are pairs!".format(self.coordinate1, self.coordinate2))
-            print("\n")
             self.match = True
             return True
         else:
-            print("Unfortunately, {} and {} are not pairs.".format(self.coordinate1, self.coordinate2))
-            print("Try again")
-            print("\n")
-            self.match = False
             return False
+
+    def memory(self):
+        if self.match == True:
+            print("Congrats! {} and {} are pairs!".format(self.coordinate1, self.coordinate2))
+            print("\n")
+        else:
+            previous = "{} at {}, {} at {}".format(self.selection1, self.coordinate1, self.selection2, self.coordinate2)
+            self.memoryList.append(previous)
+            print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1, self.coordinate2))
+            print("Try again, your previous selections were:")
+            for line in self.memoryList:
+                print(line)
+            print("\n")
 
     def run(self):
         self.startScreen()
@@ -186,13 +202,15 @@ class Game():
             board = Board()
         board.show()
         while self.end == False:
-            self.makeSelection(deck_of_cards)
+            self.makeSelection(deck_of_cards, board)
             self.check()
             if self.match == True:
                 board.progress(self.match,self.numrow1,self.numcol1)
                 board.progress(self.match,self.numrow2,self.numcol2)
+                self.memory()
             else:
                 board.progress(self.match,self.numrow1,self.numcol1)
+                self.memory()
 
             self.gameComplete(board)
         if self.end == True:
@@ -216,7 +234,7 @@ class Game():
             board = Board()
         board.show()
         while self.end == False:
-            self.makeSelection(deck_of_cards)
+            self.makeSelection(deck_of_cards, board)
             self.check()
             if self.match == True:
                 board.progress(self.match,self.numrow1,self.numcol1)
@@ -230,8 +248,6 @@ class Game():
             print("Congratulations! You have won the game!")
             print("Exiting...")
 
-    def difficulty(self, setting): #1-3 levels of difficulty
-        pass
 
 game = Game()
 game.run()
