@@ -17,19 +17,19 @@ class Deck():
         num = list(range(2,11))
         pictures = ["Jack", "Queen", "King"]
         values = ["Ace"]
-        wholeDeck = [Card(0, "Joker").value]*4
+        #wholeDeck = [Card(0, "Joker").value]*4
+        wholeDeck = []
         values += num + pictures
         #wholeDeck = []
         for s in list(range(4)):
             for i in list(range(13)):
                 card = Card(str(values[i]), suits[s])
                 wholeDeck.append(card.value)
-        #wholeDeck += jokers
         self.deck = wholeDeck
 
     def deckGrid(self):
-        rows = 7
-        cols = 8
+        rows = 4
+        cols = 13
         return np.array(self.deck).reshape(rows, cols)
 
     def shuffle(self):
@@ -41,8 +41,8 @@ class Deck():
         
 class Board():
     def __init__(self): #deck is object of the Deck Class 
-        self.rows = 7
-        self.cols = 8 
+        self.rows = 4
+        self.cols = 13 
         
         rowHeader = list(string.ascii_lowercase)
         header1 = "     {:>2}".format(rowHeader[0])
@@ -233,8 +233,7 @@ class Game():
     def difficulty(self, setting): #1-3 levels of difficulty
         pass
 
-
 game = Game()
-#game.run()
-game.test()
+game.run()
+#game.test()
 
