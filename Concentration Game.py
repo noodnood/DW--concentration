@@ -53,10 +53,10 @@ class Board():
         self.rowHeader = rowHeader
         self.line = ""
         self.lineList = []
-    
-    def progress(self, match = False, rowNum=0, colNum=0):
-        rowNum-=1
-        colNum-=1
+
+    def progress(self, match = False, rowNum=1, colNum=1):
+        # rowNum-=1
+        # colNum-=1
         newLine = ""
         sep = "  "
         newlineList = []
@@ -83,7 +83,7 @@ class Board():
                 eachRow = newLine.split("  ")
                 newlineList.append(eachRow)
             self.lineList = newlineList
-
+            
     def show(self):
         line = ""
         entry = "\'?\'"
@@ -131,25 +131,25 @@ class Game():
         coordinate1 = input("Please enter a coordinate:") #of the form a1, b1 etc
         self.coordinate1 = coordinate1
         selection1 = list(coordinate1)
-        i = int(selection1[1])
-        i -= 1
-        selection1[0] = a.index(selection1[0])
-        selection1[1] = i
-        self.selection1 = deck_of_cards.deckGrid()[selection1[1], selection1[0]]
-        self.numrow1 = selection1[0]
-        self.numcol1 = i
+        row1 = int(selection1[1])  
+        row1 -= 1
+        col1 = int(a.index(selection1[0]))
+        #selection1[1] = row1
+        self.selection1 = deck_of_cards.deckGrid()[row1, col1]
+        self.numcol1 = col1
+        self.numrow1 = row1
         print("You have selected the > {} <".format(self.selection1))
 
         coordinate2 = input("Please enter a coordinate:") #of the form a1, b1 etc
         self.coordinate2 = coordinate2
         selection2 = list(coordinate2)
-        j = int(selection2[1])
-        j -= 1
-        selection2[0] = a.index(selection2[0])
-        selection2[1] = j
-        self.selection2 = deck_of_cards.deckGrid()[selection2[1], selection2[0]]
-        self.numrow2 = selection2[0]
-        self.numcol2 = j
+        row2 = int(selection2[1])
+        row2 -= 1
+        col2 = int(a.index(selection2[0]))
+        #selection2[1] = row2
+        self.selection2 = deck_of_cards.deckGrid()[row2, col2]
+        self.numcol2 =col2
+        self.numrow2 = row2
         print("You have selected the > {} <".format(self.selection2))
         print("\n")
         print("Your selections were: the {} and the {}.".format(self.selection1, self.selection2))
@@ -172,9 +172,39 @@ class Game():
     def run(self):
         self.startScreen()
         deck_of_cards = Deck()
-        deck_of_cards.shuffle()
         print("Initializing...")
+        deck_of_cards.shuffle()
         inp = input("The cards has been shuffled once.\nWould you like to shuffle the cards again? (Y/N) \n>>>")
+        if inp.lower() == "y":
+            deck_of_cards.shuffle()
+            print("Shuffling...\nShuffling complete! \nThe game is starting now!")
+            print("\n")
+            board = Board()
+        else:
+            print("Alright then, the game is starting now!")
+            print("\n")
+            board = Board()
+        board.show()
+        while self.end == False:
+            self.makeSelection(deck_of_cards)
+            self.check()
+            if self.match == True:
+                board.progress(self.match,self.numrow1,self.numcol1)
+                board.progress(self.match,self.numrow2,self.numcol2)
+            else:
+                board.progress(self.match,self.numrow1,self.numcol1)
+
+            self.gameComplete(board)
+        if self.end == True:
+            board.progress(self.match,self.numrow1,self.numcol1)
+            print("Congratulations! You have won the game!")
+            print("Exiting...")
+
+    def test(self):
+        self.startScreen
+        deck_of_cards = Deck()
+        print("Initializing...")
+        inp = input("The cards has not been shuffled.\nWould you like to shuffle the cards? (Y/N) \n>>>")
         if inp.lower() == "y":
             deck_of_cards.shuffle()
             print("Shuffling...\nShuffling complete! \nThe game is starting now!")
@@ -205,4 +235,6 @@ class Game():
 
 
 game = Game()
-game.run()
+#game.run()
+game.test()
+
