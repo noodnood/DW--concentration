@@ -64,7 +64,7 @@ class Board():
         print(self.header1)
         print("\n")
         if match == True:
-            self.lineList[rowNum][colNum] = " 0 "
+            self.lineList[rowNum][colNum] = "\'0\'"
             for row in range(self.rows):
                 newLine = sep.join(self.lineList[row])
 
