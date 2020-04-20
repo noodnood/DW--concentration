@@ -3,27 +3,27 @@ import random
 import string
 
 class Card():
-    def __init__(self, number, suit):
-        self.number = number
+    def __init__(self, rank, suit):
+        self.rank = rank
         self.suit = suit
-        self.value = "{} of {}".format(self.number, self.suit)
+        self.value = "{} of {}".format(self.rank, self.suit)
 
     def show(self):
-        print("{} of {}".format(self.number, self.suit))
+        print("{} of {}".format(self.rank, self.suit))
 
 class Deck():
     def __init__(self): 
         suits = ["Spades", "Clubs", "Diamonds", "Hearts"]
         num = list(range(2,11))
         pictures = ["Jack", "Queen", "King"]
-        values = ["Ace"]
+        ranks = ["Ace"]
         #wholeDeck = [Card(0, "Joker").value]*4
         wholeDeck = []
-        values += num + pictures
+        ranks += num + pictures
         #wholeDeck = []
         for s in list(range(4)):
             for i in list(range(13)):
-                card = Card(str(values[i]), suits[s])
+                card = Card(str(ranks[i]), suits[s])
                 wholeDeck.append(card.value)
         self.deck = wholeDeck
 
@@ -34,6 +34,7 @@ class Deck():
 
     def shuffle(self):
         random.shuffle(self.deck)
+        print("Shuffling...\nShuffling complete! \nThe game is starting now!")
         return self.deck
 
     def show(self):
@@ -147,6 +148,7 @@ class Game():
 
     def startScreen(self):
         print("Welcome to Concentration!")
+        print("Initializing...")
 
     def endScreen(self, board):
         board.show(self.end)
@@ -159,17 +161,17 @@ class Game():
                 else:
                     self.end = False
 
-    def Select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
+    def select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
         self.coordinate1 = Coordinate(deck_of_cards, board) # ['a', '1'] 
         if self.coordinate1.allowed == False:
-            return self.Select(deck_of_cards, board)
+            return self.select(deck_of_cards, board)
         self.numcol1 = self.coordinate1.col
         self.numrow1 = self.coordinate1.row
         print("You have selected the > {} <".format(self.coordinate1.name))
 
         self.coordinate2 = Coordinate(deck_of_cards, board)
         if self.coordinate2.allowed == False:
-            return self.Select(deck_of_cards, board)
+            return self.select(deck_of_cards, board)
         self.numcol2 = self.coordinate2.col
         self.numrow2 = self.coordinate2.row
         print("You have selected the > {} <".format(self.coordinate2.name))
@@ -178,7 +180,7 @@ class Game():
         print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
 
     def check(self):
-        if self.coordinate1.name == self.coordinate2:
+        if self.coordinate1.name == self.coordinate2.name:
             print("Please choose 2 different coordinates!")
             self.match = False
         else:
@@ -207,21 +209,24 @@ class Game():
                 print(line)
             print("\n")
 
-    def cheat(self, deck_of_cards,board):
-        layout = deck_of_cards.deckGrid()
+    def cheat(self, deck_of_cards):
+        # layout = deck_of_cards.deckGrid()
+        arr = deck_of_cards.deckGrid()
+        cardDict = {}
+        mapDict = {}
+        for card in deck_of_cards.deck:     
+            result = np.where(arr == card)
 
 
-        self.skip = True
+
+        # self.skip = True
 
     def run(self):
         self.startScreen()
         deck_of_cards = Deck()
-        print("Initializing...")
-        #deck_of_cards.shuffle()
         inp = input("The cards has not been shuffled.\nWould you like to shuffle the cards? (Y/N) \n>>>")
         if inp.lower() == "y":
             deck_of_cards.shuffle()
-            print("Shuffling...\nShuffling complete! \nThe game is starting now!")
             print("\n")
             board = Board()
         else:
@@ -230,7 +235,7 @@ class Game():
             board = Board()
         board.create()
         while self.end == False:
-            self.Select(deck_of_cards, board)
+            self.select(deck_of_cards, board)
             self.check()
             if self.match == True:
                 board.build(self.match,self.numrow1,self.numcol1)
@@ -250,7 +255,10 @@ class Game():
 
 game = Game()
 game.run()
-# test = Deck()
-# test.deckGrid()
-# test.show()
 
+# test = Deck()
+# print(test.deckGrid())
+# test.deckGrid()
+# test.shuffle()
+# test.show()
+# game.cheat(test)
