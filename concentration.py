@@ -111,27 +111,32 @@ class Board():
 class Coordinate():
     def __init__(self, deck_of_cards, board):
         a = list(string.ascii_lowercase)
-        coordinates = input("Please enter a coordinate (a1,c4 etc):\n>>>") #of the form a1, b1 etc
+        coordinates = input("Please enter a coordinate (c4 etc):\n>>>") #of the form a1, b1 etc
         selection = list(coordinates) # ['a', '1']
         invalid = "Invalid input, please ensure your row number is a number between 1 and {} and your column is an alphabet from a to {}".format(board.rows,a[board.cols-1])
-        
-        if selection[0] not in a or selection[1].isdigit() == False:
-            self.allowed = False
-            print(invalid)
+        self.bypass = False
 
+        if coordinates == "end":
+            self.bypass = True
+        
         else:
-            row = int(selection[1]) 
-            row -= 1
-            col = int(a.index(selection[0]))
-            self.coordinates = coordinates # 'a1'
-            self.row = row
-            self.col = col        
-            if self.row < 0 or self.row >= board.rows or self.col >= board.cols:
+            if selection[0] not in a or selection[1].isdigit() == False:
                 self.allowed = False
                 print(invalid)
+
             else:
-                self.allowed = True
-                self.name = deck_of_cards.deckGrid()[self.row, self.col] # e.g. 3 of Hearts
+                row = int(selection[1]) 
+                row -= 1
+                col = int(a.index(selection[0]))
+                self.coordinates = coordinates # 'a1'
+                self.row = row
+                self.col = col        
+                if self.row < 0 or self.row >= board.rows or self.col >= board.cols:
+                    self.allowed = False
+                    print(invalid)
+                else:
+                    self.allowed = True
+                    self.name = deck_of_cards.deckGrid()[self.row, self.col] # e.g. 3 of Hearts
 
 class Game():
     def __init__(self):
@@ -145,6 +150,9 @@ class Game():
         self.skip = False
         self.coordinate1 = 0
         self.coordinate2 = 0
+        self.cardMap = {}
+        self.rankDict= {}
+        self.cheats = "Not activated"
 
     def startScreen(self):
         print("Welcome to Concentration!")
@@ -163,35 +171,46 @@ class Game():
 
     def select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
         self.coordinate1 = Coordinate(deck_of_cards, board) # ['a', '1'] 
-        if self.coordinate1.allowed == False:
-            return self.select(deck_of_cards, board)
-        self.numcol1 = self.coordinate1.col
-        self.numrow1 = self.coordinate1.row
-        print("You have selected the > {} <".format(self.coordinate1.name))
+        if self.coordinate1.bypass == True:
+            self.cheat(deck_of_cards)
+            return
+        else:
+            if self.coordinate1.allowed == False:
+                return self.select(deck_of_cards, board)
+            self.numcol1 = self.coordinate1.col
+            self.numrow1 = self.coordinate1.row
+            print("You have selected the > {} <".format(self.coordinate1.name))
 
         self.coordinate2 = Coordinate(deck_of_cards, board)
-        if self.coordinate2.allowed == False:
-            return self.select(deck_of_cards, board)
-        self.numcol2 = self.coordinate2.col
-        self.numrow2 = self.coordinate2.row
-        print("You have selected the > {} <".format(self.coordinate2.name))
-        
-        print("\n")
-        print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
+        if self.coordinate2.bypass == True:
+            self.cheat(deck_of_cards)
+            return
+        else:
+            if self.coordinate2.allowed == False:
+                return self.select(deck_of_cards, board)
+            self.numcol2 = self.coordinate2.col
+            self.numrow2 = self.coordinate2.row
+            print("You have selected the > {} <".format(self.coordinate2.name))
+            
+            print("\n")
+            print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
 
     def check(self):
-        if self.coordinate1.name == self.coordinate2.name:
-            print("Please choose 2 different coordinates!")
-            self.match = False
+        if self.cheats =="Activated":
+            return
         else:
-            self.coordinate1.name.split(" of ") #['2','Spades']
-            self.coordinate2.name.split(" of ")
-            if self.coordinate1.name[0] == self.coordinate2.name[0]:
-                self.match = True
-                return True
-            else:
+            if self.coordinate1.name == self.coordinate2.name:
+                print("Please choose 2 different coordinates!")
                 self.match = False
-                return False
+            else:
+                self.coordinate1.name.split(" of ") #['2','Spades']
+                self.coordinate2.name.split(" of ")
+                if self.coordinate1.name[0] == self.coordinate2.name[0]:
+                    self.match = True
+                    return True
+                else:
+                    self.match = False
+                    return False
 
     def memory(self):
         if self.match == True:
@@ -212,14 +231,21 @@ class Game():
     def cheat(self, deck_of_cards):
         # layout = deck_of_cards.deckGrid()
         arr = deck_of_cards.deckGrid()
-        cardDict = {}
+        rankDict = {}
         mapDict = {}
+        cardMap = {}
         for card in deck_of_cards.deck:     
             result = np.where(arr == card)
-
-
-
-        # self.skip = True
+            location = list(zip(result[0], result[1]))
+            cardMap[card] = location[0]
+            rank = card.split(" of ")
+            if rank[0] not in rankDict:
+                rankDict[rank[0]] = [cardMap[card]]
+            else:
+                rankDict[rank[0]] += [cardMap[card]]
+        self.cardMap = cardMap
+        self.rankDict = rankDict
+        self.cheats = "Activated"
 
     def run(self):
         self.startScreen()
@@ -234,8 +260,11 @@ class Game():
             print("\n")
             board = Board()
         board.create()
+
         while self.end == False:
             self.select(deck_of_cards, board)
+            if self.cheats == "Activated":
+                break
             self.check()
             if self.match == True:
                 board.build(self.match,self.numrow1,self.numcol1)
@@ -248,17 +277,28 @@ class Game():
 
             self.gameComplete(board)
 
-        if self.end == True:
-            board.progress()
-            print("Congratulations! You have won the game!")
-            print("Exiting...")
+        for rank in self.rankDict.keys(): ##cheats activated
+            self.match = True
+            coor = self.rankDict[rank]
+            i = 0
+            j = 1
+            while i < 3:
+                board.build(self.match,coor[i][0],coor[i][1])
+                board.build(self.match,coor[j][0],coor[j][1])
+                board.progress()
+                i+=2
+                j+=2
+        self.end == True        
+        
+        board.progress()
+        print("Congratulations! You have won the game!")
+        print("Exiting...")
 
 game = Game()
 game.run()
 
 # test = Deck()
 # print(test.deckGrid())
-# test.deckGrid()
 # test.shuffle()
-# test.show()
+# print(test.deckGrid())
 # game.cheat(test)
