@@ -119,7 +119,7 @@ class Coordinate():
         if coordinates == "end":
             self.bypass = True
         else:
-            if selection[0] not in a or selection[1].isdigit() == False:
+            if len(coordinates) !=2 or coordinates == "" or selection[0] not in a or selection[1] == "" or selection[1].isdigit() == False:
                 self.allowed = False
                 print(invalid)
 
@@ -160,10 +160,13 @@ class Game():
     def isComplete(self, board):
         for line in board.lineList:
             for i in range(board.cols):
-                if line[i] == " 0 ":
+                if line[i] == " {} ".format(chr(9608)):
                     self.end = True
                 else:
                     self.end = False
+        if self.end == True:
+            print("Congratulations! You have won the game!")
+            print("Exiting...")
 
     def select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
         self.coordinate1 = Coordinate(deck_of_cards, board) # ['a', '1'] 
