@@ -1,3 +1,3 @@
 # DW -concentration
  
-enter 'end'when making a selection to skip to end
+enter 'end' when making a selection to skip to end
