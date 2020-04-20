@@ -111,19 +111,26 @@ class Coordinate():
     def __init__(self, deck_of_cards, board):
         a = list(string.ascii_lowercase)
         coordinates = input("Please enter a coordinate (a1,c4 etc):\n>>>") #of the form a1, b1 etc
-        selection = list(coordinates) # ['a', '1']  
-        row = int(selection[1]) 
-        row -= 1
-        col = int(a.index(selection[0]))
-        self.coordinates = coordinates # 'a1'
-        self.row = row
-        self.col = col        
-        if self.row < 0 or self.row >= board.rows or self.col >= board.cols:
+        selection = list(coordinates) # ['a', '1']
+        invalid = "Invalid input, please ensure your row number is a number between 1 and {} and your column is an alphabet from a to {}".format(board.rows,a[board.cols-1])
+        
+        if selection[0] not in a or selection[1].isdigit() == False:
             self.allowed = False
-            print("Invalid input, please ensure your row number is between 1 and {} and your column number from a to {}".format(board.rows,a[board.cols-1]))
+            print(invalid)
+
         else:
-            self.allowed = True
-            self.name = deck_of_cards.deckGrid()[self.row, self.col] # e.g. 3 of Hearts
+            row = int(selection[1]) 
+            row -= 1
+            col = int(a.index(selection[0]))
+            self.coordinates = coordinates # 'a1'
+            self.row = row
+            self.col = col        
+            if self.row < 0 or self.row >= board.rows or self.col >= board.cols:
+                self.allowed = False
+                print(invalid)
+            else:
+                self.allowed = True
+                self.name = deck_of_cards.deckGrid()[self.row, self.col] # e.g. 3 of Hearts
 
 class Game():
     def __init__(self):
@@ -171,14 +178,18 @@ class Game():
         print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
 
     def check(self):
-        self.coordinate1.name.split(" of ") #['2','Spades']
-        self.coordinate2.name.split(" of ")
-        if self.coordinate1.name[0] == self.coordinate2.name[0]:
-            self.match = True
-            return True
-        else:
+        if self.coordinate1.name == self.coordinate2:
+            print("Please choose 2 different coordinates!")
             self.match = False
-            return False
+        else:
+            self.coordinate1.name.split(" of ") #['2','Spades']
+            self.coordinate2.name.split(" of ")
+            if self.coordinate1.name[0] == self.coordinate2.name[0]:
+                self.match = True
+                return True
+            else:
+                self.match = False
+                return False
 
     def memory(self):
         if self.match == True:
