@@ -118,7 +118,6 @@ class Coordinate():
 
         if coordinates == "end":
             self.bypass = True
-        
         else:
             if selection[0] not in a or selection[1].isdigit() == False:
                 self.allowed = False
@@ -158,9 +157,6 @@ class Game():
         print("Welcome to Concentration!")
         print("Initializing...")
 
-    def endScreen(self, board):
-        board.show(self.end)
-
     def isComplete(self, board):
         for line in board.lineList:
             for i in range(board.cols):
@@ -193,7 +189,7 @@ class Game():
             print("You have selected the > {} <".format(self.coordinate2.name))
             
             print("\n")
-            print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
+            print("Your selections were: the {} at > {} < and the {} at > {} <.\n".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates))
 
     def check(self):
         if self.cheats =="Activated":
@@ -229,7 +225,6 @@ class Game():
             print("\n")
 
     def cheat(self, deck_of_cards):
-        # layout = deck_of_cards.deckGrid()
         arr = deck_of_cards.deckGrid()
         rankDict = {}
         cardMap = {}
@@ -242,9 +237,35 @@ class Game():
                 rankDict[rank[0]] = [cardMap[card]]
             else:
                 rankDict[rank[0]] += [cardMap[card]]
-        self.cardMap = cardMap
-        self.rankDict = rankDict
+        self.cardMap = cardMap # card : (a,b)
+        self.rankDict = rankDict # rank : [(a,b),(c,d)...]
         self.cheats = "Activated"
+
+    def get_key(self, val): 
+        for card, location in self.cardMap.items(): 
+            if val == location: 
+                return card 
+
+    def selfsolver(self, board):
+        for rank in self.rankDict.keys(): ##cheats activated
+            self.match = True
+            coor = self.rankDict[rank]
+            i = 0
+            j = 1
+            a = list(string.ascii_lowercase)
+            
+            while i < 3: 
+                coordinate1 = a[coor[i][1]] 
+                coordinate1 += str(int(coor[i][0] + 1))    
+                coordinate2 = a[coor[j][1]] 
+                coordinate2 += str(int(coor[j][0] + 1))      
+                board.build(self.match,coor[i][0],coor[i][1])
+                board.build(self.match,coor[j][0],coor[j][1])
+                
+                print("Your selections were: the {} at > {} < and the {} at > {} <.\n".format(self.get_key(coor[i]), coordinate1, self.get_key(coor[j]), coordinate2))
+                board.progress()
+                i += 2
+                j += 2
 
     def run(self):
         self.startScreen()
@@ -253,11 +274,10 @@ class Game():
         if inp.lower() == "y":
             deck_of_cards.shuffle()
             print("\n")
-            board = Board()
         else:
             print("Alright then, the game is starting now!")
             print("\n")
-            board = Board()
+        board = Board()
         board.create()
 
         while self.end == False:
@@ -278,28 +298,11 @@ class Game():
             self.isComplete(board)
 
         if self.cheats == "Activated":
-            for rank in self.rankDict.keys(): ##cheats activated
-                self.match = True
-                coor = self.rankDict[rank]
-                i = 0
-                j = 1
-                while i < 3:
-                    board.build(self.match,coor[i][0],coor[i][1])
-                    board.build(self.match,coor[j][0],coor[j][1])
-                    board.progress()
-                    i+=2
-                    j+=2
+            self.selfsolver(board)
             self.end == True        
         
-        board.progress()
         print("Congratulations! You have won the game!")
         print("Exiting...")
 
 game = Game()
 game.run()
-
-# test = Deck()
-# print(test.deckGrid())
-# test.shuffle()
-# print(test.deckGrid())
-# game.cheat(test)
