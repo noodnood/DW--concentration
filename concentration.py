@@ -54,39 +54,42 @@ class Board():
         self.line = ""
         self.lineList = []
 
-    def progress(self, match = False, rowNum=1, colNum=1):
+    def progress(self):
         newLine = ""
         sep = "  "
         newlineList = []
 
         print(self.header1)
         print("\n")
-        if match == True:
-            self.lineList[rowNum][colNum] = "\'0\'"
-            for row in range(self.rows):
-                newLine = sep.join(self.lineList[row])
 
-                print(" {:<4}".format(self.rowHeader[row]) + newLine)
-                print("\n")
-
-                eachRow = newLine.split("  ")
-                newlineList.append(eachRow)
-            self.lineList = newlineList
-        else:
-            for row in range(self.rows):
-                newLine = sep.join(self.lineList[row])
-                print(" {:<4}".format(self.rowHeader[row]) + newLine)
-                print("\n")
-
-                eachRow = newLine.split("  ")
-                newlineList.append(eachRow)
-            self.lineList = newlineList
+        for row in range(self.rows):
+            newLine = sep.join(self.lineList[row])
             
-    def show(self, end=False): #end = Boolean
+            print(" {:<4}".format(self.rowHeader[row]) + newLine)
+            print("\n")
+
+            eachRow = newLine.split("  ")
+            newlineList.append(eachRow)
+
+        self.lineList = newlineList
+
+    def build(self, match, rowNum=1, colNum=1):
+        newLine = ""
+        sep = "  "
+        newlineList = []
+        if match == True:
+            self.lineList[rowNum][colNum] = "\'{}\'".format(chr(9608))
+        for row in range(self.rows):
+            newLine = sep.join(self.lineList[row])
+            eachRow = newLine.split("  ")
+            newlineList.append(eachRow)
+        self.lineList = newlineList
+
+    def create(self, end=False): #end = Boolean
         line = ""
         entry = "\'?\'"
         if end == True:
-            entry = "\'0\'"
+            entry = "\'{}\'".format(chr(9608))
         lineList = []
 
         for col in range(self.cols):
@@ -150,11 +153,9 @@ class Game():
                     self.end = False
 
     def Select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
-        a = list(string.ascii_lowercase)
         self.coordinate1 = Coordinate(deck_of_cards, board) # ['a', '1'] 
         if self.coordinate1.allowed == False:
             return self.Select(deck_of_cards, board)
-        self.selection1 = self.coordinate1.coordinates
         self.numcol1 = self.coordinate1.col
         self.numrow1 = self.coordinate1.row
         print("You have selected the > {} <".format(self.coordinate1.name))
@@ -162,12 +163,12 @@ class Game():
         self.coordinate2 = Coordinate(deck_of_cards, board)
         if self.coordinate2.allowed == False:
             return self.Select(deck_of_cards, board)
-        self.selection2 = self.coordinate2.coordinates
         self.numcol2 = self.coordinate2.col
         self.numrow2 = self.coordinate2.row
         print("You have selected the > {} <".format(self.coordinate2.name))
+        
         print("\n")
-        print("Your selections were: the {} and the {}.".format(self.coordinate1.name, self.coordinate2.name))
+        print("Your selections were: the {} and the {}.\n".format(self.coordinate1.name, self.coordinate2.name))
 
     def check(self):
         self.coordinate1.name.split(" of ") #['2','Spades']
@@ -182,12 +183,12 @@ class Game():
     def memory(self):
         if self.match == True:
             print("Congrats! {} and {} are pairs!".format(self.coordinate1.name, self.coordinate2.name))
-            print("your previous selections were:")
+            print("Your previous selections were:")
             for line in self.memoryList:
                 print(line)
             print("\n")
         else:
-            previous = "{} at {}, {} at {}".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates)
+            previous = "{:>15} at {} | {:<} at {}".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates)
             self.memoryList.append(previous)
             print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1.coordinates, self.coordinate2.coordinates))
             print("Try again, your previous selections were:")
@@ -195,7 +196,7 @@ class Game():
                 print(line)
             print("\n")
 
-    def cheat(self, deck_of_cards):
+    def cheat(self, deck_of_cards,board):
         layout = deck_of_cards.deckGrid()
 
 
@@ -216,28 +217,28 @@ class Game():
             print("Alright then, the game is starting now!")
             print("\n")
             board = Board()
-        board.show()
+        board.create()
         while self.end == False:
             self.Select(deck_of_cards, board)
             self.check()
             if self.match == True:
-                board.progress(self.match,self.numrow1,self.numcol1)
-                board.progress(self.match,self.numrow2,self.numcol2)
+                board.build(self.match,self.numrow1,self.numcol1)
+                board.build(self.match,self.numrow2,self.numcol2)
+                board.progress()
                 self.memory()
             else:
-                board.progress(self.match,self.numrow1,self.numcol1)
+                board.progress()
                 self.memory()
 
             self.gameComplete(board)
 
         if self.end == True:
-            board.progress(self.match,self.numrow1,self.numcol1)
+            board.progress()
             print("Congratulations! You have won the game!")
             print("Exiting...")
 
 game = Game()
 game.run()
-
 # test = Deck()
 # test.deckGrid()
 # test.show()
