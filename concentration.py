@@ -232,7 +232,6 @@ class Game():
         # layout = deck_of_cards.deckGrid()
         arr = deck_of_cards.deckGrid()
         rankDict = {}
-        mapDict = {}
         cardMap = {}
         for card in deck_of_cards.deck:     
             result = np.where(arr == card)
@@ -263,12 +262,10 @@ class Game():
 
         while self.end == False:
             self.select(deck_of_cards, board)
-            
             if self.cheats == "Activated":
                 break
 
             self.check()
-
             if self.match == True:
                 board.build(self.match,self.numrow1,self.numcol1)
                 board.build(self.match,self.numrow2,self.numcol2)
