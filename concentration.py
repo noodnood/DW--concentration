@@ -161,7 +161,7 @@ class Game():
     def endScreen(self, board):
         board.show(self.end)
 
-    def gameComplete(self, board):
+    def isComplete(self, board):
         for line in board.lineList:
             for i in range(board.cols):
                 if line[i] == " 0 ":
@@ -263,9 +263,12 @@ class Game():
 
         while self.end == False:
             self.select(deck_of_cards, board)
+            
             if self.cheats == "Activated":
                 break
+
             self.check()
+
             if self.match == True:
                 board.build(self.match,self.numrow1,self.numcol1)
                 board.build(self.match,self.numrow2,self.numcol2)
@@ -275,20 +278,21 @@ class Game():
                 board.progress()
                 self.memory()
 
-            self.gameComplete(board)
+            self.isComplete(board)
 
-        for rank in self.rankDict.keys(): ##cheats activated
-            self.match = True
-            coor = self.rankDict[rank]
-            i = 0
-            j = 1
-            while i < 3:
-                board.build(self.match,coor[i][0],coor[i][1])
-                board.build(self.match,coor[j][0],coor[j][1])
-                board.progress()
-                i+=2
-                j+=2
-        self.end == True        
+        if self.cheats == "Activated":
+            for rank in self.rankDict.keys(): ##cheats activated
+                self.match = True
+                coor = self.rankDict[rank]
+                i = 0
+                j = 1
+                while i < 3:
+                    board.build(self.match,coor[i][0],coor[i][1])
+                    board.build(self.match,coor[j][0],coor[j][1])
+                    board.progress()
+                    i+=2
+                    j+=2
+            self.end == True        
         
         board.progress()
         print("Congratulations! You have won the game!")
