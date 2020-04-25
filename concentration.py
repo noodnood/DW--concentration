@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import string
+import libdw.sm as sm
+
 
 class Card():
     def __init__(self, rank, suit):
@@ -86,7 +88,7 @@ class Board():
             newlineList.append(eachRow)
         self.lineList = newlineList
 
-    def create(self, end=False): #end = Boolean
+    def create(self, end=False):
         line = ""
         entry = "\'?\'"
         if end == True:
@@ -118,6 +120,8 @@ class Coordinate():
 
         if coordinates == "end":
             self.bypass = True
+            self.name = "end"
+            return
         else:
             if len(coordinates) !=2 or coordinates == "" or selection[0] not in a or selection[1] == "" or selection[1].isdigit() == False:
                 self.allowed = False
@@ -139,39 +143,35 @@ class Coordinate():
 
 class Game():
     def __init__(self):
-        self.numrow1 = 0
-        self.numcol1 = 0
-        self.numrow2 = 0
-        self.numcol2 = 0
         self.match = False
         self.end = False
         self.memoryList = []
-        self.skip = False
         self.coordinate1 = 0
         self.coordinate2 = 0
         self.cardMap = {}
         self.rankDict= {}
         self.cheats = "Not activated"
-
+        self.match_history = []
+        self.match_count = 0
+   
     def startScreen(self):
         print("Welcome to Concentration!")
         print("Initializing...")
 
-    def isComplete(self, board):
-        for line in board.lineList:
-            for i in range(board.cols):
-                if line[i] == " {} ".format(chr(9608)):
-                    self.end = True
-                else:
-                    self.end = False
-        if self.end == True:
-            print("Congratulations! You have won the game!")
-            print("Exiting...")
+    def isComplete(self):
+        if self.match_count == 26:
+            self.end = True
+            return
+        else:
+            self.end = False
+            return
+
 
     def select(self, deck_of_cards, board): #this initializes 2 coordinates that you choose
+        
         self.coordinate1 = Coordinate(deck_of_cards, board) # ['a', '1'] 
         if self.coordinate1.bypass == True:
-            self.cheat(deck_of_cards)
+            self.cheatcode(deck_of_cards)
             return
         else:
             if self.coordinate1.allowed == False:
@@ -182,7 +182,7 @@ class Game():
 
         self.coordinate2 = Coordinate(deck_of_cards, board)
         if self.coordinate2.bypass == True:
-            self.cheat(deck_of_cards)
+            self.cheatcode(deck_of_cards)
             return
         else:
             if self.coordinate2.allowed == False:
@@ -190,44 +190,53 @@ class Game():
             self.numcol2 = self.coordinate2.col
             self.numrow2 = self.coordinate2.row
             print("You have selected the > {} <".format(self.coordinate2.name))
-            
-            print("\n")
-            print("Your selections were: the {} at > {} < and the {} at > {} <.\n".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates))
 
-    def check(self):
-        if self.cheats =="Activated":
+        print("\n")
+        print("Your selections were: the {} at > {} < and the {} at > {} <.\n".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates))
+        return self.coordinate1.coordinates, self.coordinate2.coordinates
+
+    def check(self): #checks whether selections are a pair or not
+        if self.cheats == "Activated":
+            return
+        elif self.coordinate1.coordinates in self.match_history or self.coordinate2.coordinates in self.match_history:
+            self.match = False
             return
         else:
             if self.coordinate1.name == self.coordinate2.name:
-                print("Please choose 2 different coordinates!")
                 self.match = False
+                return
             else:
                 self.coordinate1.name.split(" of ") #['2','Spades']
                 self.coordinate2.name.split(" of ")
                 if self.coordinate1.name[0] == self.coordinate2.name[0]:
                     self.match = True
-                    return True
                 else:
                     self.match = False
-                    return False
+                return
 
-    def memory(self):
+    def gameprogress(self): 
         if self.match == True:
-            print("Congrats! {} and {} are pairs!".format(self.coordinate1.name, self.coordinate2.name))
-            print("Your previous selections were:")
-            for line in self.memoryList:
-                print(line)
-            print("\n")
+            return print("Congrats! {} and {} are pairs!".format(self.coordinate1.name, self.coordinate2.name))
+
         else:
             previous = "{:>15} at {} | {:<} at {}".format(self.coordinate1.name, self.coordinate1.coordinates, self.coordinate2.name, self.coordinate2.coordinates)
             self.memoryList.append(previous)
-            print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1.coordinates, self.coordinate2.coordinates))
-            print("Try again, your previous selections were:")
-            for line in self.memoryList:
-                print(line)
-            print("\n")
+            
+            if self.coordinate1.name == self.coordinate2.name:
+                return print("Please choose 2 different coordinates!\n")
 
-    def cheat(self, deck_of_cards):
+            elif self.coordinate1.coordinates in self.match_history or self.coordinate2.coordinates in self.match_history:
+                return print("Please choose coordinates that have not been matched\n")
+
+            else:
+                return print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1.coordinates, self.coordinate2.coordinates))
+            
+        print("Your previous mismatches were:")
+        for line in self.memoryList:
+            print(line)
+        print("\n")
+
+    def cheatcode(self, deck_of_cards): #initializes the dicts which the auto_solver needs
         arr = deck_of_cards.deckGrid()
         rankDict = {}
         cardMap = {}
@@ -240,8 +249,8 @@ class Game():
                 rankDict[rank[0]] = [cardMap[card]]
             else:
                 rankDict[rank[0]] += [cardMap[card]]
-        self.cardMap = cardMap # card : (a,b)
-        self.rankDict = rankDict # rank : [(a,b),(c,d)...]
+        self.cardMap = cardMap # {card : (a,b)}
+        self.rankDict = rankDict # {rank : [(a,b),(c,d)...]}
         self.cheats = "Activated"
 
     def get_key(self, val): 
@@ -269,6 +278,7 @@ class Game():
                 board.progress()
                 i += 2
                 j += 2
+            self.end = True
 
     def run(self):
         self.startScreen()
@@ -282,30 +292,31 @@ class Game():
             print("\n")
         board = Board()
         board.create()
-
+     
         while self.end == False:
             self.select(deck_of_cards, board)
             if self.cheats == "Activated":
+                self.selfsolver(board)
                 break
-
             self.check()
             if self.match == True:
-                board.build(self.match,self.numrow1,self.numcol1)
-                board.build(self.match,self.numrow2,self.numcol2)
+                board.build(self.match, self.coordinate1.row, self.coordinate1.col)
+                board.build(self.match, self.coordinate2.row, self.coordinate2.col)
                 board.progress()
-                self.memory()
+                self.match_count += 1
+                self.match_history.append(self.coordinate1.coordinates)
+                self.match_history.append(self.coordinate2.coordinates)
+ 
             else:
                 board.progress()
-                self.memory()
-
-            self.isComplete(board)
-
-        if self.cheats == "Activated":
-            self.selfsolver(board)
-            self.end == True        
+                
+            self.gameprogress()
+            self.isComplete()
         
         print("Congratulations! You have won the game!")
         print("Exiting...")
+           
+
 
 game = Game()
 game.run()
