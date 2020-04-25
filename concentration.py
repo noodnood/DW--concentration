@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import string
-import libdw.sm as sm
+
 
 
 class Card():
@@ -223,13 +223,13 @@ class Game():
             self.memoryList.append(previous)
             
             if self.coordinate1.name == self.coordinate2.name:
-                return print("Please choose 2 different coordinates!\n")
+                print("Please choose 2 different coordinates!\n")
 
             elif self.coordinate1.coordinates in self.match_history or self.coordinate2.coordinates in self.match_history:
-                return print("Please choose coordinates that have not been matched\n")
+                print("Please choose coordinates that have not been matched\n")
 
             else:
-                return print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1.coordinates, self.coordinate2.coordinates))
+                print("Unfortunately, {} and {} are not pairs.\n".format(self.coordinate1.coordinates, self.coordinate2.coordinates))
             
         print("Your previous mismatches were:")
         for line in self.memoryList:
@@ -306,10 +306,9 @@ class Game():
                 self.match_count += 1
                 self.match_history.append(self.coordinate1.coordinates)
                 self.match_history.append(self.coordinate2.coordinates)
- 
+                
             else:
                 board.progress()
-                
             self.gameprogress()
             self.isComplete()
         
