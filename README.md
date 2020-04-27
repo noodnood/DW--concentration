@@ -13,7 +13,7 @@ Has a rank and suit
 
 
 
-#### ``deck``
+#### ``class deck``
 Class that initiates the deck of 52 playing cards
 
 - ##### ``__init__()``
@@ -37,10 +37,12 @@ Class to store player variables. Inherits ``bjsm``.
     Updates the player's screen with the game progress
 - ##### ``build()``
     Updates the board behind the scenes, translates to flipping of the selected pair on the board
+- ##### ``create()``
+    Initializes the initial board, only runs once
 
-
-#### ``Coordinate``
+#### ``class Coordinate``
 The input selected by the player, represents which card the player wants to flip
 
-##### ``game()``
+##### ``class game()``
+The main class
 
